@@ -7,5 +7,5 @@ lazy val root = (project in file("."))
     scalaVersion := "3.1.3",
     // crossScalaVersions := Seq("3.1.3"),
     libraryDependencies ++=
-      catsEffect ++ cats ++ circe ++ http4s :+ jsonSchema
+      catsEffect ++ cats ++ circe ++ http4s ++ logging ++ unittest :+ jsonSchema
   )

@@ -1,9 +1,13 @@
 package me.adamd.services
 
-trait ValidatorService[F[_]]:
-  def validate(): F[Unit]
+import cats.Monad
+import me.adamd.domain.models._
 
-object ValidatorService:
+object Validator:
 
-  def apply[F[_]]() = new ValidatorService[F]:
-    def validate(): F[Unit] = ???
+  def cleanJson[F[+_]: Monad](document: Document): F[Document] = ???
+
+  def validateJson[F[+_]](
+      schema: Schema,
+      document: Document
+  ): F[SchemaValidation] = ???
