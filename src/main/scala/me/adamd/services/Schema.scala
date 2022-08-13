@@ -39,7 +39,7 @@ object SchemaService:
         requestId: RequestId
     ): F[SchemaValidation] =
       val notFound =
-        Failure(schemaId, Action.GetSchema, Cause.NotFound, "schema not found")
+        Failure(schemaId, Action.GetSchema, Cause.NonExist, "schema not found")
       val ok: Schema => SchemaValidation =
         Success(schemaId, Action.GetSchema, _)
       store.read(schemaId, requestId).map(_.fold(notFound)(ok))

@@ -3,6 +3,7 @@ package me.adamd.http
 import munit._
 import org.http4s._
 import cats.effect.IO
+import cats.syntax.either._
 import cats.syntax.option._
 import cats.syntax.applicative._
 import io.circe.Json
@@ -19,21 +20,21 @@ class RoutesSpec extends CatsEffectSuite {
     val schema  = Schema(Map("foo" -> "bar").asJson)
     val success = Success(SchemaId.apply("id-1"), Action.GetSchema, schema)
     val route =
-      Routes.apply(mock(success))(_.pure[IO], (_, _) => success.pure[IO])
+      Routes.apply(mock(success))((_, _) => ().asRight)
 
     val resp = route.orNotFound.run(
       Request(method = Method.GET, uri = Uri.unsafeFromString("/schema/id-1"))
     )
 
     val expected = schema.value
-    assertEquals(check(resp, Status.Ok, expected.some), true)
+    check(resp, Status.Ok, expected.some)
   }
 
   test("GET /schema/<id> - 404") {
     val fail =
-      Failure(SchemaId.apply("id-1"), Action.GetSchema, Cause.NotFound, "na")
+      Failure(SchemaId.apply("id-1"), Action.GetSchema, Cause.NonExist, "na")
     val route =
-      Routes.apply(mock(fail))(_.pure[IO], (_, _) => fail.pure[IO])
+      Routes.apply(mock(fail))((_, _) => ().asRight)
 
     val resp = route.orNotFound.run(
       Request(method = Method.GET, uri = Uri.unsafeFromString("/schema/id-1"))
@@ -45,14 +46,14 @@ class RoutesSpec extends CatsEffectSuite {
       "action"  -> "getSchema",
       "message" -> "na"
     ).asJson
-    assertEquals(check(resp, Status.NotFound, expected.some), true)
+    check(resp, Status.NotFound, expected.some)
   }
 
   test("POST /schema/<id> - 201") {
     val schema  = Schema(Map("foo" -> "bar").asJson)
     val success = Success(SchemaId.apply("id-1"), Action.UploadSchema, schema)
     val route =
-      Routes.apply(mock(success))(_.pure[IO], (_, _) => success.pure[IO])
+      Routes.apply(mock(success))((_, _) => ().asRight)
 
     val resp = route.orNotFound.run(
       Request(method = Method.POST, uri = Uri.unsafeFromString("/schema/id-1"))
@@ -64,7 +65,7 @@ class RoutesSpec extends CatsEffectSuite {
       "status" -> "success",
       "action" -> "uploadSchema"
     ).asJson
-    assertEquals(check(resp, Status.Created, expected.some), true)
+    check(resp, Status.Created, expected.some)
   }
 
   test("POST /schema/<id> - 400") {
@@ -75,7 +76,7 @@ class RoutesSpec extends CatsEffectSuite {
       Cause.InvalidSchema,
       "Invalid JSON"
     )
-    val route = Routes.apply(mock(fail))(_.pure[IO], (_, _) => fail.pure[IO])
+    val route = Routes.apply(mock(fail))((_, _) => ().asRight)
 
     val resp = route.orNotFound.run(
       Request(method = Method.POST, uri = Uri.unsafeFromString("/schema/id-1"))
@@ -88,7 +89,7 @@ class RoutesSpec extends CatsEffectSuite {
       "action"  -> "uploadSchema",
       "message" -> "Invalid JSON"
     ).asJson
-    assertEquals(check[Json](resp, Status.BadRequest, Some(expected)), true)
+    check(resp, Status.BadRequest, Some(expected))
   }
 
   test("POST /validate/<id> - 200") {
@@ -97,7 +98,7 @@ class RoutesSpec extends CatsEffectSuite {
     val success =
       Success(SchemaId.apply("id-1"), Action.ValidateDocument, schema)
     val route =
-      Routes.apply(mock(success))(_.pure[IO], (_, _) => success.pure[IO])
+      Routes.apply(mock(success))((_, _) => ().asRight)
 
     val resp = route.orNotFound.run(
       Request(
@@ -107,7 +108,7 @@ class RoutesSpec extends CatsEffectSuite {
     )
 
     val expected = body.value
-    assertEquals(check[Json](resp, Status.Ok, expected.some), true)
+    check(resp, Status.Ok, expected.some)
   }
 
   test("POST /validate/<id> - 400") {
@@ -121,7 +122,7 @@ class RoutesSpec extends CatsEffectSuite {
         "Property '/root/timeout' is required"
       )
     val route =
-      Routes.apply(mock(fail))(_.pure[IO], (_, _) => fail.pure[IO])
+      Routes.apply(mock(fail))((_, _) => ().asRight)
 
     val resp = route.orNotFound.run(
       Request(
@@ -136,20 +137,22 @@ class RoutesSpec extends CatsEffectSuite {
       "action"  -> "validateDocument",
       "message" -> "Property '/root/timeout' is required"
     ).asJson
-    assertEquals(check[Json](resp, Status.BadRequest, expected.some), true)
+    check(resp, Status.BadRequest, expected.some)
   }
 
   private def check[A](
       actual: IO[Response[IO]],
       expectedStatus: Status,
       expectedBody: Option[A]
-  )(using ev: EntityDecoder[IO, A]): Boolean =
-    val actualResp  = actual.unsafeRunSync()
-    val statusCheck = actualResp.status == expectedStatus
-    val bodyCheck = expectedBody.fold[Boolean](
-      actualResp.body.compile.toVector.unsafeRunSync().isEmpty
-    )(_ == actualResp.as[A].unsafeRunSync())
-    statusCheck && bodyCheck
+  )(using ev: EntityDecoder[IO, A]): Unit =
+    val actualResp = actual.unsafeRunSync()
+    assertEquals(actualResp.status, expectedStatus)
+    expectedBody.fold(
+      assertEquals(
+        actualResp.body.compile.toVector.unsafeRunSync().isEmpty,
+        true
+      )
+    )(exp => assertEquals(exp, actualResp.as[A].unsafeRunSync()))
 
   private def mock(v: SchemaValidation) =
     new SchemaService[IO]:

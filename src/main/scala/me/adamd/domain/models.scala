@@ -28,7 +28,7 @@ object models:
     case GetSchema
 
   enum Cause:
-    case NotFound
+    case NonExist
     case InvalidSchema
     case InvalidDocument
 

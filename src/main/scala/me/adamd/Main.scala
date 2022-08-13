@@ -4,8 +4,7 @@ import cats.effect.{IOApp, IO, Resource, Sync}
 import cats.syntax.flatMap._
 import me.adamd.http._
 import me.adamd.persistence.SchemaStore
-import me.adamd.services.Validator._
-import me.adamd.services.SchemaService
+import me.adamd.services._
 import org.typelevel.log4cats._
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.SelfAwareStructuredLogger
@@ -19,7 +18,7 @@ object Main extends IOApp.Simple {
     logInit() *> (for
       schemaStore   <- SchemaStore.resource()
       schemaService <- SchemaService.resource(schemaStore)
-      routes        <- Routes.resource(schemaService)(cleanJson, validateJson)
+      routes        <- Routes.resource(schemaService)(Validator.validateJson)
       _             <- HttpServer.resource[IO]("0.0.0.0", 8080, routes)
     yield ()).use(_ => IO.never)
 
