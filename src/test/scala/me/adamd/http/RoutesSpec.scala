@@ -114,15 +114,12 @@ class RoutesSpec extends CatsEffectSuite {
   test("POST /validate/<id> - 400") {
     val schema = Schema(Map("foo" -> "bar").asJson)
     val body   = Document(Map("baz" -> "bar").asJson)
-    val fail =
-      Failure(
-        SchemaId.apply("id-1"),
-        Action.ValidateDocument,
-        Cause.InvalidDocument,
-        "Property '/root/timeout' is required"
-      )
+    val success =
+      Success(SchemaId.apply("id-1"), Action.GetSchema, schema)
     val route =
-      Routes.apply(mock(fail))((_, _) => ().asRight)
+      Routes.apply(mock(success))((_, _) =>
+        "Property '/root/timeout' is required".asLeft
+      )
 
     val resp = route.orNotFound.run(
       Request(
@@ -154,17 +151,16 @@ class RoutesSpec extends CatsEffectSuite {
       )
     )(exp => assertEquals(exp, actualResp.as[A].unsafeRunSync()))
 
-  private def mock(v: SchemaValidation) =
-    new SchemaService[IO]:
+  private def mock(v: SchemaValidation) = new SchemaService[IO]:
 
-      override def upsert(
-          schemaId: SchemaId,
-          schema: Schema,
-          requestId: RequestId
-      ): IO[SchemaValidation] = v.pure[IO]
+    override def upsert(
+        schemaId: SchemaId,
+        schema: Schema,
+        requestId: RequestId
+    ): IO[SchemaValidation] = v.pure[IO]
 
-      override def read(
-          schemaId: SchemaId,
-          requestId: RequestId
-      ): IO[SchemaValidation] = v.pure[IO]
+    override def read(
+        schemaId: SchemaId,
+        requestId: RequestId
+    ): IO[SchemaValidation] = v.pure[IO]
 }
