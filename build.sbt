@@ -1,11 +1,20 @@
 import Dependencies._
 
+lazy val core = cats ++ catsEffect ++ db ++ http4s
+lazy val json = circe ++ jsonSchema
+
 lazy val root = (project in file("."))
   .settings(
     name := "schema-validation-service",
     organization := "me.adamd",
     scalaVersion := "3.1.3",
+    scalacOptions ++= Seq(
+      // "-explain",
+      "-indent",
+      "-new-syntax",
+      "-Ycheck-mods",
+      "-Ycheck-all-patmat"
+    ),
     libraryDependencies ++=
-      cats ++ catsEffect ++ db ++ http4s ++
-        circe ++ logging ++ unittest :+ jsonSchema
+      core ++ json ++ logging ++ unittest
   )

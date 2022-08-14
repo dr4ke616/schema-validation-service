@@ -24,10 +24,13 @@ class SchemaStoreSpec extends CatsEffectSuite {
   )
 
   files.test("read *> write *> read") { file =>
-    val cfg = DbConfig.default.copy(file = file.toFile().getAbsolutePath())
+    val c = SqliteDbConfig(
+      file = file.toFile().getAbsolutePath(),
+      table = "json_schema"
+    )
 
     SchemaStore
-      .resource[IO](cfg)
+      .resource[IO](c)
       .use { svc =>
         val sid    = SchemaId.apply(UUID.randomUUID().toString())
         val rid    = RequestId.apply(UUID.randomUUID().toString())

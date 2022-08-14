@@ -82,7 +82,7 @@ object SchemaStore:
 
     config match {
       case InMmeDbConfig              => memResource()
-      case SqliteDbConfig(u, p, f, t) => sqliteResource(u, p, f, t)
+      case SqliteDbConfig(f, t, u, p) => sqliteResource(f, t, u, p)
     }
 
   private def memResource[F[+_]: Async: Logger](): Resource[F, SchemaStore[F]] =
@@ -90,10 +90,10 @@ object SchemaStore:
       Resource.pure(new MemSchemaStore[F]())
 
   private def sqliteResource[F[+_]: Async: Logger](
-      user: String,
-      pass: String,
       file: String,
-      table: String
+      table: String,
+      user: Option[String],
+      pass: Option[String]
   ): Resource[F, SchemaStore[F]] =
     def createTable(tx: Transactor[F]) =
       val action = sql"""
@@ -112,8 +112,8 @@ object SchemaStore:
         tx <- HikariTransactor.newHikariTransactor[F](
                 "org.sqlite.JDBC",
                 s"jdbc:sqlite:$file",
-                user,
-                pass,
+                user.getOrElse(""),
+                pass.getOrElse(""),
                 ex
               )
         _ <- Resource.eval(createTable(tx))

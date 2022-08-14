@@ -28,7 +28,6 @@ object Dependencies {
     "org.http4s" %% "http4s-dsl"          % Http4sVersion,
     "org.http4s" %% "http4s-circe"        % Http4sVersion,
     "org.http4s" %% "http4s-blaze-server" % Http4sVersion
-    // "org.http4s" %% "http4s-blaze-client" % Http4sVersion
   )
 
   val db = Seq(
@@ -37,8 +36,9 @@ object Dependencies {
     "org.tpolecat" %% "doobie-hikari" % DoobieVersion
   )
 
-  val jsonSchema =
+  val jsonSchema =Seq(
     "com.github.java-json-tools" % "json-schema-validator" % "2.2.14"
+  )
 
   val logging = Seq(
     "org.typelevel" %% "log4cats-core"   % CatsLoggingVersion,
@@ -48,6 +48,5 @@ object Dependencies {
 
   val unittest = Seq(
     "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
-    // "com.alejandrohdezma" %% "http4s-munit"        % "0.11.0" % Test
   )
 }

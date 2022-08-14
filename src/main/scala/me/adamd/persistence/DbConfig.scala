@@ -1,15 +1,14 @@
 package me.adamd.persistence
 
+import cats.syntax.option._
+
 sealed trait DbConfig
 
 case object InMmeDbConfig extends DbConfig
 
 final case class SqliteDbConfig(
-    user: String,
-    pass: String,
     file: String,
-    table: String
+    table: String,
+    user: Option[String] = none,
+    pass: Option[String] = none
 ) extends DbConfig
-
-object DbConfig:
-  val default = SqliteDbConfig("", "", "validator.db", "json_schema")
