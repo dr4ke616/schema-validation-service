@@ -2,7 +2,7 @@ import Dependencies._
 
 lazy val root = (project in file("."))
   .settings(
-    name := "validation-service",
+    name := "schema-validation-service",
     organization := "me.adamd",
     scalaVersion := "3.1.3",
     libraryDependencies ++=
