@@ -5,7 +5,7 @@ lazy val root = (project in file("."))
     name := "validation-service",
     organization := "me.adamd",
     scalaVersion := "3.1.3",
-    // crossScalaVersions := Seq("3.1.3"),
     libraryDependencies ++=
-      catsEffect ++ cats ++ circe ++ http4s ++ logging ++ unittest :+ jsonSchema
+      cats ++ catsEffect ++ db ++ http4s ++
+        circe ++ logging ++ unittest :+ jsonSchema
   )

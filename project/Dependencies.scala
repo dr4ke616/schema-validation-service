@@ -7,6 +7,7 @@ object Dependencies {
   val CatsLoggingVersion = "2.4.0"
   val CirceVersion       = "0.14.2"
   val Http4sVersion      = "1.0.0-M35"
+  val DoobieVersion      = "1.0.0-RC1"
 
   val circe = Seq(
     "io.circe" %% "circe-core"    % CirceVersion,
@@ -28,6 +29,12 @@ object Dependencies {
     "org.http4s" %% "http4s-circe"        % Http4sVersion,
     "org.http4s" %% "http4s-blaze-server" % Http4sVersion
     // "org.http4s" %% "http4s-blaze-client" % Http4sVersion
+  )
+
+  val db = Seq(
+    "org.xerial"    % "sqlite-jdbc"   % "3.39.2.0",
+    "org.tpolecat" %% "doobie-core"   % DoobieVersion,
+    "org.tpolecat" %% "doobie-hikari" % DoobieVersion
   )
 
   val jsonSchema =

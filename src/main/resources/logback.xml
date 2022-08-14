@@ -12,6 +12,8 @@
 	</appender>
 
 	<logger name="org.http4s" level="INFO" />
+	<logger name="org.doobie" level="INFO" />
+	<logger name="com.zaxxer.hikari" level="INFO" />
 
 	<root level="DEBUG">
 		<appender-ref ref="STDOUT" />

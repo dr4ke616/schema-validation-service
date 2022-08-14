@@ -9,12 +9,11 @@ import org.http4s.server.middleware.{Logger, RequestId}
 object HttpServer:
 
   def resource[F[+_]: Async](
-      host: String,
-      port: Int,
+      config: HttpConfig,
       routes: HttpRoutes[F]
   ): Resource[F, Server] =
     BlazeServerBuilder[F]
-      .bindHttp(port, host)
+      .bindHttp(config.port, config.host)
       .withHttpApp(middleware(routes).orNotFound)
       .resource
 
